@@ -92,17 +92,40 @@ public class H2DbManager {
      */
     private void initializeDb() {
         createCompanyTableIfNotExist();
+        createCarTableIfNotExist();
     }
 
     /**
      * Ensures existence of COMPANY table
      */
     private void createCompanyTableIfNotExist() {
-        try (Statement statement = this.connection.createStatement()){
-            String sql = "CREATE TABLE IF NOT EXISTS COMPANY (" +
-                         "ID INT PRIMARY KEY AUTO_INCREMENT, " +
-                         "NAME VARCHAR(255) NOT NULL UNIQUE);";
-            statement.executeUpdate(sql);
+        try (Statement statement = this.connection.createStatement()) {
+            // Creating query
+            String query = "CREATE TABLE IF NOT EXISTS COMPANY (" +
+                           "ID INT PRIMARY KEY AUTO_INCREMENT, " +
+                           "NAME VARCHAR(255) NOT NULL UNIQUE);";
+
+            // Executing query
+            statement.executeUpdate(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Ensures existence of CAR table
+     */
+    private void createCarTableIfNotExist() {
+        try (Statement statement = this.connection.createStatement()) {
+            // Creating query
+            String query = "CREATE TABLE IF NOT EXISTS CAR (" +
+                           "ID INT PRIMARY KEY AUTO_INCREMENT," +
+                           "NAME VARCHAR(255) UNIQUE NOT NULL," +
+                           "COMPANY_ID INT NOT NULL," +
+                           "FOREIGN KEY (COMPANY_ID) REFERENCES COMPANY(ID));";
+
+            // Executing query
+            statement.executeUpdate(query);
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -1,9 +1,11 @@
 package org.griddynamics.dao;
 
 import org.griddynamics.H2DbManager;
+import org.griddynamics.entity.Car;
 import org.griddynamics.entity.Company;
 
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,9 +13,9 @@ import java.util.List;
 /**
  * Data access object interface implementation
  * for h2 database
- * for Company class
+ * for Car class
  */
-public class CompanyH2DAO {
+public class CarH2DAO {
 
     // h2 database manager reference
     private final H2DbManager h2DbManager;
@@ -22,27 +24,32 @@ public class CompanyH2DAO {
      * Default constructor
      * @param h2DbManager | Database connection manager to work with
      */
-    public CompanyH2DAO(H2DbManager h2DbManager) {
+    public CarH2DAO(H2DbManager h2DbManager) {
         this.h2DbManager = h2DbManager;
     }
 
     /**
-     * Reads companies from database
-     * @return List of companies
+     * Returns all cars, those owner is given company.
+     * @param company
+     * @return List of cars of given company
      */
-    public List<Company> getCompanies() {
-        List<Company> result = null;
+    public List<Car> getCarsOfCompany(Company company) {
+        List<Car> result = null;
         try (PreparedStatement statement = this.h2DbManager
                                                .getConnection()
-                                               .prepareStatement("SELECT * FROM COMPANY")) {
+                                               .prepareStatement("SELECT * FROM CAR WHERE COMPANY_ID = ?")) {
+            // Setting desired COMPANY_ID value
+            statement.setInt(1, company.getId());
+
             // Executing query
             ResultSet data = statement.executeQuery();
 
-            // Reading companies
+            // Reading cars
             result = new LinkedList<>();
             while (data.next()) {
-                result.add(new Company(data.getInt("ID"),
-                                       data.getString("NAME")));
+                result.add(new Car(data.getInt("ID"),
+                                   data.getString("NAME"),
+                                   company));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -53,19 +60,20 @@ public class CompanyH2DAO {
     }
 
     /**
-     * Adds given company to database
-     * @param company | Company to add
+     * Adds car to CAR database
+     * @param car | Car instance to add
      */
-    public void addCompany(Company company) {
+    public void addCar(Car car) {
         try (PreparedStatement statement = this.h2DbManager
                                                .getConnection()
-                                               .prepareStatement("INSERT INTO COMPANY (NAME) VALUES (?);")){
-            // Setting name to desired value
-            statement.setString(1, company.getName());
+                                               .prepareStatement("INSERT INTO CAR (NAME, COMPANY_ID) VALUES (?, ?);")) {
+            // Setting values
+            statement.setString(1, car.getName());
+            statement.setInt(2, car.getOwner().getId());
 
-            // Executing
+            // Executing query
             statement.executeUpdate();
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
