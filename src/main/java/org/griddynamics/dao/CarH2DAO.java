@@ -60,6 +60,38 @@ public class CarH2DAO {
     }
 
     /**
+     * Returns all free cars of given company
+     * @param company | Company to get cars of
+     * @return | List of free cars
+     */
+    public List<Car> getFreeCarsOfCompany(Company company) {
+        List<Car> result = null;
+        try (PreparedStatement statement = this.h2DbManager
+                .getConnection()
+                .prepareStatement("SELECT * FROM CAR WHERE COMPANY_ID = ? " +
+                                      "AND CAR.ID NOT IN (SELECT RENTED_CAR_ID FROM CUSTOMER WHERE RENTED_CAR_ID IS NOT NULL);")) {
+            // Setting desired COMPANY_ID value
+            statement.setInt(1, company.getId());
+
+            // Executing query
+            ResultSet data = statement.executeQuery();
+
+            // Reading cars
+            result = new LinkedList<>();
+            while (data.next()) {
+                result.add(new Car(data.getInt("ID"),
+                        data.getString("NAME"),
+                        company));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Returning as immutable list
+        return Collections.unmodifiableList(result);
+    }
+
+    /**
      * Adds car to CAR database
      * @param car | Car instance to add
      */
