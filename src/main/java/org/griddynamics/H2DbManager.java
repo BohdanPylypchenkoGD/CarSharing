@@ -93,6 +93,7 @@ public class H2DbManager {
     private void initializeDb() {
         createCompanyTableIfNotExist();
         createCarTableIfNotExist();
+        createCustomerTableIfNotExist();
     }
 
     /**
@@ -123,6 +124,25 @@ public class H2DbManager {
                            "NAME VARCHAR(255) UNIQUE NOT NULL," +
                            "COMPANY_ID INT NOT NULL," +
                            "FOREIGN KEY (COMPANY_ID) REFERENCES COMPANY(ID));";
+
+            // Executing query
+            statement.executeUpdate(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Ensures existence of CUSTOMER table
+     */
+    private void createCustomerTableIfNotExist() {
+        try (Statement statement = this.connection.createStatement()) {
+            // Creating query
+            String query = "CREATE TABLE IF NOT EXISTS CUSTOMER (" +
+                           "ID INT PRIMARY KEY AUTO_INCREMENT," +
+                           "NAME VARCHAR(255) UNIQUE NOT NULL," +
+                           "RENTED_CAR_ID INT," +
+                           "FOREIGN KEY (RENTED_CAR_ID) REFERENCES CAR(ID));";
 
             // Executing query
             statement.executeUpdate(query);
